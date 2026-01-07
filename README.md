@@ -31,14 +31,24 @@ This project uses [uv](https://github.com/astral-sh/uv).
 uv sync
 ```
 
-## 🚀 Usage
+## 🌐 Web Dashboard
 
-### Basic Command
-```bash
-uv run pdf_ocr.py input.pdf output.pdf
-```
+The `UI-api` branch includes a modern web interface for easier processing and visualization.
 
-### Speed Modes
+### How to Run
+1. **Start the server**:
+   ```bash
+   uv run python app.py
+   ```
+2. **Open your browser**:
+   Navigate to `http://localhost:8000`
+
+### Features
+- **Drag & Drop**: Easy PDF uploading.
+- **Side-by-Side Comparison**: See the "Before" (garbled) vs "After" (Unicode) text.
+- **Live Progress**: Visual tracking of the OCR engine.
+
+## 🚀 CLI Usage
 | Mode | DPI | Description |
 | :--- | :--- | :--- |
 | `--mode fast` | 150 | Highest speed, good for clear documents. |
