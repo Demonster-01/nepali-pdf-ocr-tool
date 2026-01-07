@@ -63,16 +63,25 @@ def pdf_to_images(pdf_path, dpi=200, max_pages=None):
 
 
 def ocr_image(reader, image):
-    """Perform OCR on a single image with optimized batching"""
+    """Perform OCR on a single image with optimized batching and detection"""
     import numpy as np
-    img_array = np.array(image)
+    img_array = np.array(image.convert('RGB'))
     
-    # Perform OCR with batch_size=8 for better GPU utilization
-    results = reader.readtext(img_array, batch_size=8)
+    # Perform OCR with optimized settings
+    # craft_hot_fix=False can be faster
+    # paragraph=False is faster for raw extraction
+    results = reader.readtext(
+        img_array, 
+        batch_size=16, # Increased batch size for better GPU utilization
+        paragraph=False,
+        adjust_contrast=0.5,
+        width_ths=0.7,
+        contrast_ths=0.1
+    )
     
     text_blocks = []
     for (bbox, text, confidence) in results:
-        if confidence > 0.2:  # Slightly lower threshold for faster modes
+        if confidence > 0.15: # Lowered threshold slightly to avoid missing text in fast modes
             text_blocks.append({
                 'text': text,
                 'bbox': bbox,
@@ -170,7 +179,8 @@ def process_pdf(input_pdf, output_pdf, dpi=200, use_gpu=True, max_pages=None, pr
         text_data.append(text_blocks)
         
         if progress_callback:
-            progress_callback(idx + 1, len(images), "ocr")
+            # Pass sample text to callback for live UI preview
+            progress_callback(idx + 1, len(images), "ocr", text_blocks[:3])
     
     create_searchable_pdf(images, text_data, output_pdf)
     

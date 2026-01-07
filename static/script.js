@@ -42,12 +42,19 @@ fileInput.addEventListener('change', (e) => {
     }
 });
 
+const liveLog = document.getElementById('live-log');
+const originalViewer = document.getElementById('original-viewer');
+const processedViewer = document.getElementById('processed-viewer');
+
+let originalPdfBlob = null;
+
 function handleFileSelect(file) {
     if (file.type !== 'application/pdf') {
         alert('Please select a PDF file.');
         return;
     }
     selectedFile = file;
+    originalPdfBlob = URL.createObjectURL(file);
     dropZone.querySelector('span').textContent = `Ready: ${file.name}`;
     processBtn.disabled = false;
 }
@@ -62,9 +69,10 @@ processBtn.addEventListener('click', async () => {
 
     uploadSection.classList.add('hidden');
     progressSection.classList.remove('hidden');
+    liveLog.innerHTML = '<div class="log-entry">Initializing connection...</div>';
 
     try {
-        const response = await fetch('/upload', {
+        const response = await fetch('/upload?mode=' + modeSelect.value, {
             method: 'POST',
             body: formData
         });
@@ -73,7 +81,7 @@ processBtn.addEventListener('click', async () => {
         startPolling(data.task_id);
     } catch (err) {
         console.error(err);
-        alert('Upload failed. Check server console.');
+        alert('Upload failed.');
     }
 });
 
@@ -89,7 +97,7 @@ function startPolling(taskId) {
 
             if (data.status === 'completed') {
                 clearInterval(pollInterval);
-                finishProcessing(data);
+                finishProcessing(data, taskId);
             } else if (data.status === 'failed') {
                 clearInterval(pollInterval);
                 alert(`Error: ${data.error}`);
@@ -102,31 +110,42 @@ function startPolling(taskId) {
 }
 
 function updateProgress(data) {
-    const { progress, total_pages, status } = data;
+    const { progress, total_pages, status, sample_text } = data;
 
     statusBadge.textContent = status.charAt(0).toUpperCase() + status.slice(1) + '...';
 
     if (total_pages > 0) {
         const percent = (progress / total_pages) * 100;
         progressBar.style.width = `${percent}%`;
-        progressText.textContent = `Page ${progress} / ${total_pages}`;
+        progressText.textContent = `Processing Page ${progress} / ${total_pages}`;
+
+        if (sample_text && sample_text.length > 0) {
+            const lastText = sample_text[sample_text.length - 1].text;
+            addLog(`Page ${progress}: ${lastText}`);
+        }
     }
 }
 
-function finishProcessing(data) {
+function addLog(msg) {
+    const div = document.createElement('div');
+    div.className = 'log-entry';
+    div.textContent = msg;
+    liveLog.prepend(div);
+}
+
+async function finishProcessing(data, taskId) {
     progressSection.classList.add('hidden');
     resultSection.classList.remove('hidden');
 
     downloadLink.href = data.result_url;
 
-    // Update comparison text
-    if (data.sample_text && data.sample_text.length > 0) {
-        // Since we can't easily get the original garbled text through OCR (it's what we fixed)
-        // we'll show a demonstration or leave a placeholder.
-        // For real use, we could extract page 1 original text too, but that's overkill for now.
-        beforeText.textContent = "d'n'sL ck/fw ;+lxtf...";
-        afterText.textContent = data.sample_text.map(b => b.text).join(' ');
-    }
+    // Set viewer sources
+    originalViewer.src = originalPdfBlob;
+
+    // Fetch the result as a blob for the viewer
+    const response = await fetch(data.result_url);
+    const blob = await response.blob();
+    processedViewer.src = URL.createObjectURL(blob);
 }
 
 resetBtn.addEventListener('click', resetUI);

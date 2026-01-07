@@ -1,12 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nepali PDF OCR Tool</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@400;600;800&display=swap"
+        rel="stylesheet">
 </head>
+
 <body>
     <div class="background-blobs">
         <div class="blob blob-1"></div>
@@ -31,7 +35,7 @@
                     <input type="file" id="file-input" accept=".pdf" hidden>
                 </div>
             </div>
-            
+
             <div class="controls">
                 <div class="control-group">
                     <label for="mode-select">Optimization Mode:</label>
@@ -46,45 +50,54 @@
         </section>
 
         <section id="progress-section" class="card hidden">
-            <div class="progress-container">
-                <div class="status-badge" id="status-badge">Processing...</div>
-                <div class="progress-bar-bg">
-                    <div id="progress-bar" class="progress-bar"></div>
-                </div>
-                <div class="progress-stats">
-                    <span id="progress-text">Page 0 / 0</span>
-                    <span id="elapsed-time">0:00</span>
-                </div>
+            <div class="progress-header">
+                <div class="status-badge" id="status-badge">Initializing...</div>
+                <span id="elapsed-time">0:00</span>
+            </div>
+            <div class="progress-bar-bg">
+                <div id="progress-bar" class="progress-bar"></div>
+            </div>
+            <div class="progress-stats">
+                <span id="progress-text">Preparing pages...</span>
+            </div>
+            <div id="live-log" class="live-log">
+                <!-- Real-time OCR snippets will appear here -->
             </div>
         </section>
 
-        <section id="result-section" class="card hidden fade-in">
+        <section id="result-section" class="card hidden fade-in wide-card">
             <div class="result-header">
-                <h2>✨ Done!</h2>
-                <a id="download-link" href="#" class="btn-primary btn-download">Download Processed PDF</a>
+                <h2>✨ OCR Complete</h2>
+                <div class="result-actions">
+                    <a id="download-link" href="#" class="btn-primary btn-download">Download PDF</a>
+                    <button id="reset-btn" class="btn-outline">New Upload</button>
+                </div>
             </div>
 
-            <div class="comparison-grid">
-                <div class="comparison-card">
-                    <h3>Before (Custom Font)</h3>
-                    <div class="text-sample" id="before-text">
-                        tyf Joj:yf sfod u/L ;j{;fwf/0fsf]
+            <div class="viewer-container">
+                <div class="viewer-panel">
+                    <div class="panel-header">
+                        <h3>Original PDF</h3>
+                        <span class="badge">Legacy Font</span>
                     </div>
-                    <p class="sample-label">Legacy Encoding</p>
+                    <div class="viewer-frame">
+                        <iframe id="original-viewer"></iframe>
+                    </div>
                 </div>
-                <div class="comparison-card highlight">
-                    <h3>After (Universal Unicode)</h3>
-                    <div class="text-sample" id="after-text">
-                        तथा व्यवस्था कायम गरी सर्वसाधारणको
+                <div class="viewer-panel highlight">
+                    <div class="panel-header">
+                        <h3>Processed PDF</h3>
+                        <span class="badge success">Searchable Unicode</span>
                     </div>
-                    <p class="sample-label">Clean Devanagari</p>
+                    <div class="viewer-frame">
+                        <iframe id="processed-viewer"></iframe>
+                    </div>
                 </div>
             </div>
-            
-            <button id="reset-btn" class="btn-outline">Process Another PDF</button>
         </section>
     </main>
 
     <script src="script.js"></script>
 </body>
+
 </html>

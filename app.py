@@ -30,13 +30,15 @@ class TaskStatus(BaseModel):
     result_url: Optional[str] = None
     sample_text: Optional[list] = None
 
-def ocr_progress_sync(task_id: str, current: int, total: int, status: str):
+def ocr_progress_sync(task_id: str, current: int, total: int, status: str, sample: list = None):
     """Sync callback for OCR progress updates"""
     tasks[task_id].update({
         "progress": current,
         "total_pages": total,
         "status": status
     })
+    if sample:
+        tasks[task_id]["sample_text"] = sample
 
 def run_ocr_task(task_id: str, input_path: str, output_path: str, mode: str):
     """Background task runner for OCR"""
@@ -46,12 +48,12 @@ def run_ocr_task(task_id: str, input_path: str, output_path: str, mode: str):
         dpi_map = {'fast': 150, 'balanced': 200, 'accurate': 300}
         dpi = dpi_map.get(mode, 200)
 
-        # Run the OCR
+        # Run the OCR with callback that includes sample text
         result = pdf_ocr.process_pdf(
             input_path, 
             output_path, 
             dpi=dpi, 
-            progress_callback=lambda c, t, s: ocr_progress_sync(task_id, c, t, s)
+            progress_callback=lambda c, t, s, samp=None: ocr_progress_sync(task_id, c, t, s, samp)
         )
         
         if result:
