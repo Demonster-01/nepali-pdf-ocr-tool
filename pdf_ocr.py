@@ -76,16 +76,19 @@ def ocr_image(reader, image):
         paragraph=False,
         adjust_contrast=0.5,
         width_ths=0.7,
-        contrast_ths=0.1
+        contrast_ths=0.1,
+        canvas_size=1280 # Faster detection
     )
     
     text_blocks = []
     for (bbox, text, confidence) in results:
-        if confidence > 0.15: # Lowered threshold slightly to avoid missing text in fast modes
+        if confidence > 0.15:
+            # Convert numpy types to native Python types for JSON serialization
+            clean_bbox = [[float(val) for val in pt] for pt in bbox]
             text_blocks.append({
                 'text': text,
-                'bbox': bbox,
-                'confidence': confidence
+                'bbox': clean_bbox,
+                'confidence': float(confidence)
             })
     
     return text_blocks
