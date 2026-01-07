@@ -1,119 +1,67 @@
-# PDF OCR Tool for Nepali Documents
+# 🇳🇵 Nepali PDF OCR Tool (GPU Accelerated)
 
-Convert PDFs with custom/non-standard fonts into searchable PDFs with proper Unicode text. This tool uses GPU-accelerated OCR (EasyOCR) to extract text from Nepali documents.
+Stop struggling with garbled text from old Nepali PDFs! This tool converts PDFs using legacy fonts (like Preeti, Kantipur, etc.) into modern, searchable PDFs with proper copy-pasteable Devanagari Unicode.
 
-## Problem It Solves
+🚀 **Optimized for speed:** Process a 120-page legal document in ~10 minutes using your GPU.
 
-When you copy text from PDFs with custom fonts (especially Nepali documents), you often get garbled Unicode characters like:
-```
-tyf Joj:yf sfod u/L ;j{;fwf/0fsf]
-```
+## ✨ Features
 
-This tool performs OCR on the PDF and creates a new searchable PDF where copied text appears as proper Nepali Unicode (Devanagari script).
+- ✅ **Fixed Copy-Paste**: Converts legacy font shapes into standard Unicode. No more `tyf Joj:yf`; you get `तथा व्यवस्था`.
+- 🏎️ **GPU Acceleration**: Leverages NVIDIA CUDA (RTX 3050+) for ultra-fast processing via EasyOCR.
+- 🧵 **Multithreaded**: Simultaneous PDF-to-image conversion to maximize CPU usage.
+- ⚡ **Speed Modes**: Choose your balance between quality and performance.
+- 🔍 **Searchable Output**: Generates an invisible text layer perfectly mapped to the visual document.
+- 📦 **UV Powered**: Uses the lightning-fast `uv` package manager for dependency management.
 
-## Features
+## 🛠️ Requirements
 
-- ✅ **GPU Acceleration**: Utilizes your NVIDIA GPU (RTX 3050) for faster processing
-- ✅ **Nepali Language Support**: Optimized for Devanagari script
-- ✅ **Multi-page Processing**: Handles PDFs of any length with progress tracking
-- ✅ **Searchable Output**: Generated PDFs are fully searchable and copyable
-- ✅ **High Quality**: Configurable DPI settings for optimal results
+### 1. System Dependencies
+You need `poppler-utils` for PDF processing and `Noto Sans Devanagari` fonts for the text layer.
 
-## Requirements
-
-### System Dependencies
-
-Install poppler-utils for PDF processing:
 ```bash
 sudo apt-get update
-sudo apt-get install -y poppler-utils
+sudo apt-get install -y poppler-utils fonts-noto-core
 ```
 
-### Python Dependencies
-
-The project uses UV for dependency management:
+### 2. Python Environment
+This project uses [uv](https://github.com/astral-sh/uv).
 
 ```bash
-# Dependencies are already configured in pyproject.toml
+# Install dependencies and setup environment
 uv sync
 ```
 
-Or to add more packages:
-```bash
-uv add package-name
-```
+## 🚀 Usage
 
-**Note**: On first run, EasyOCR will automatically download the Nepali language model (~100MB). This is a one-time download.
-
-## Installation
-
-```bash
-cd /home/personal/Desktop/learning/pdf-ocr-tool
-uv sync
-```
-
-## Usage
-
-### Basic Usage
-
+### Basic Command
 ```bash
 uv run pdf_ocr.py input.pdf output.pdf
 ```
 
-### Advanced Options
+### Speed Modes
+| Mode | DPI | Description |
+| :--- | :--- | :--- |
+| `--mode fast` | 150 | Highest speed, good for clear documents. |
+| `--mode balanced` | 200 | (Default) Best balance for most PDFs. |
+| `--mode accurate` | 300 | Best for blurry or small-font documents. |
 
+### Advanced Examples
 ```bash
-# Higher quality (slower processing)
-uv run pdf_ocr.py input.pdf output.pdf --dpi 400
+# Process only the first 5 pages for testing
+uv run pdf_ocr.py input.pdf output.pdf --max-pages 5
 
-# Use CPU only (no GPU)
+# Force CPU (if you don't have an NVIDIA GPU)
 uv run pdf_ocr.py input.pdf output.pdf --no-gpu
-
-# Show help
-uv run pdf_ocr.py --help
 ```
 
-## Example with Your PDF
+## 📖 How it Works
+1.  **Image Conversion**: The PDF is split into images using multiple CPU threads.
+2.  **AI OCR**: EasyOCR looks at the visual shapes of the characters (ignoring the broken internal font data).
+3.  **Unicode Mapping**: The detected shapes are mapped to standard Devanagari Unicode.
+4.  **Invisible Layer**: A new PDF is generated using the original images with a hidden, perfectly aligned Unicode text layer.
 
-```bash
-# Download the test PDF
-wget "https://supremecourt.gov.np/web/assets/downloads/%E0%A4%AE%E0%A5%81%E0%A4%B2%E0%A5%81%E0%A4%95%E0%A5%80-%E0%A4%85%E0%A4%AA%E0%A4%B0%E0%A4%BE%E0%A4%A7-%E0%A4%B8%E0%A4%82%E0%A4%B9%E0%A4%BF%E0%A4%A4%E0%A4%BE-%E0%A4%90%E0%A4%A8-%E0%A5%A8%E0%A5%A6%E0%A5%AD%E0%A5%AA.pdf" -O muluki_ain.pdf
+## 🤝 Contributing
+Feel free to open issues or submit pull requests to improve accuracy or speed!
 
-# Process it
-uv run pdf_ocr.py muluki_ain.pdf muluki_ain_ocr.pdf
-
-# Now open muluki_ain_ocr.pdf and copy text - it will be proper Nepali Unicode!
-```
-
-## How It Works
-
-1. **PDF → Images**: Converts each PDF page to high-resolution images
-2. **OCR Processing**: Uses EasyOCR with Nepali language model to extract text
-3. **PDF Generation**: Creates a new PDF with:
-   - Original images as the visual layer
-   - Extracted text as an invisible searchable layer
-4. **Result**: A PDF that looks identical but has proper copyable Unicode text
-
-## GPU vs CPU Performance
-
-- **With GPU (RTX 3050)**: ~5-10 seconds per page
-- **With CPU only**: ~30-60 seconds per page
-
-For long documents, GPU acceleration makes a significant difference!
-
-## Troubleshooting
-
-### "No GPU detected"
-- Make sure CUDA is installed: `nvidia-smi`
-- Check PyTorch CUDA: `python -c "import torch; print(torch.cuda.is_available())"`
-
-### "poppler not found"
-- Install poppler-utils: `sudo apt-get install poppler-utils`
-
-### Low OCR accuracy
-- Increase DPI: `--dpi 400` (but slower)
-- Ensure the source PDF is not too blurry or low quality
-
-## License
-
-Free to use and modify for your needs.
+## 📜 License
+MIT
