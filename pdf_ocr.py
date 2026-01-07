@@ -143,8 +143,8 @@ def create_searchable_pdf(images, text_data, output_path):
     print(f"   ✓ PDF created successfully")
 
 
-def process_pdf(input_pdf, output_pdf, dpi=200, use_gpu=True, max_pages=None):
-    """Main processing function"""
+def process_pdf(input_pdf, output_pdf, dpi=200, use_gpu=True, max_pages=None, progress_callback=None):
+    """Main processing function with optional progress callback"""
     import time
     start_time = time.time()
     
@@ -159,17 +159,24 @@ def process_pdf(input_pdf, output_pdf, dpi=200, use_gpu=True, max_pages=None):
     images = pdf_to_images(input_pdf, dpi=dpi, max_pages=max_pages)
 
     if not images:
-        return
+        return None
     
     print(f"\n🔍 Performing OCR on {len(images)} pages...")
     print(f"   (Mode: {dpi} DPI, GPU: {use_gpu})\n")
     
     text_data = []
     for idx, image in enumerate(tqdm(images, desc="   Processing pages")):
-        text_data.append(ocr_image(reader, image))
+        text_blocks = ocr_image(reader, image)
+        text_data.append(text_blocks)
+        
+        if progress_callback:
+            progress_callback(idx + 1, len(images), "ocr")
     
     create_searchable_pdf(images, text_data, output_pdf)
     
+    if progress_callback:
+        progress_callback(len(images), len(images), "complete")
+
     elapsed = time.time() - start_time
     print("\n" + "=" * 60)
     print(f"✓ Processing complete in {elapsed/60:.1f} minutes!")
@@ -177,6 +184,13 @@ def process_pdf(input_pdf, output_pdf, dpi=200, use_gpu=True, max_pages=None):
     print(f"  Output: {output_pdf}")
     print(f"  Pages:  {len(images)} ({elapsed/len(images):.1f}s/page)")
     print("=" * 60)
+    
+    # Return useful data for the API
+    return {
+        "output_path": output_pdf,
+        "page_count": len(images),
+        "sample_text": text_data[0][:5] if text_data else []
+    }
 
 
 def main():
