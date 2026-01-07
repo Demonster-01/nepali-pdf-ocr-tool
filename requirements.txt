@@ -1,0 +1,7 @@
+easyocr
+pdf2image
+Pillow
+reportlab
+tqdm
+torch
+torchvision
